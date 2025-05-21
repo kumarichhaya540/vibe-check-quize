@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeCheck Quiz</title>
+    <style>
+        :root {
+            --primary: #FF6B9D;
+            --secondary: #6B9DFF;
+            --dark: #333;
+            --light: #F8F9FA;
+        }
+        
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #FFF0F3, #F0F8FF);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--dark);
+        }
+        
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: var(--dark);
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .quiz-screen, .results-screen {
+            display: none;
+        }
+        
+        .active-screen {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        .question {
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        
+        .question-text {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .option {
+            background: var(--light);
+            border: 2px solid #DDD;
+            border-radius: 50px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.1rem;
+        }
+        
+        .option:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        .option.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 5px 15px rgba(255,107,157,0.3);
+        }
+        
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            font-family: inherit;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255,107,157,0.3);
+        }
+        
+        .btn:disabled {
+            background: #CCC;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .progress-container {
+            width: 100%;
+            background: #EEE;
+            border-radius: 10px;
+            margin: 20px 0;
+            height: 10px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .vibe-result {
+            margin: 30px 0;
+        }
+        
+        .vibe-emoji {
+            font-size: 5rem;
+            margin: 20px 0;
+        }
+        
+        .vibe-title {
+            font-size: 2rem;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+        
+        .vibe-score {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 10px 0;
+        }
+        
+        .vibe-description {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 20px 0;
+        }
+        
+        .share-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        
+        .share-btn {
+            padding: 12px 20px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+        
+        .share-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .twitter {
+            background: #1DA1F2;
+        }
+        
+        .whatsapp {
+            background: #25D366;
+        }
+        
+        .restart-btn {
+            background: var(--secondary);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes confetti {
+            0% { transform: translateY(0) rotate(0); opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            opacity: 0;
+            animation: confetti 3s ease-out forwards;
+            z-index: 100;
+        }
+        
+        .start-screen .emoji {
+            font-size: 4rem;
+            margin: 20px 0;
+        }
+        
+        .start-btn {
+            font-size: 1.3rem;
+            padding: 15px 40px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 500px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .option {
+                padding: 12px 15px;
+                font-size: 1rem;
+            }
+            
+            .share-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .share-btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Start Screen -->
+        <div class="start-screen active-screen" id="startScreen">
+            <div class="emoji">✨</div>
+            <h1>VibeCheck Quiz</h1>
+            <p class="subtitle">Discover your true vibe in just 5 questions!</p>
+            <button class="btn start-btn" id="startBtn">Start Quiz</button>
+        </div>
+        
+        <!-- Quiz Screen -->
+        <div class="quiz-screen" id="quizScreen">
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <div id="questionContainer"></div>
+            
+            <button class="btn" id="nextBtn" disabled>Next Question</button>
+        </div>
+        
+        <!-- Results Screen -->
+        <div class="results-screen" id="resultsScreen">
+            <div class="vibe-result">
+                <div class="vibe-emoji" id="vibeEmoji"></div>
+                <div class="vibe-title" id="vibeTitle"></div>
+                <div class="vibe-score" id="vibeScore"></div>
+                <div class="vibe-description" id="vibeDescription"></div>
+            </div>
+            
+            <div class="share-buttons">
+                <a href="#" class="share-btn twitter" id="twitterShare">
+                    <span>Share on Twitter</span>
+                </a>
+                <a href="#" class="share-btn whatsapp" id="whatsappShare">
+                    <span>Share on WhatsApp</span>
+                </a>
+            </div>
+            
+            <button class="btn restart-btn" id="restartBtn">Take Quiz Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Quiz Data
+        const questions = [
+            {
+                question: "How do you typically start your day?",
+                options: [
+                    { text: "☕ With an elaborate coffee ritual", score: 70 },
+                    { text: "⏰ Multiple snooze buttons", score: 30 },
+                    { text: "🏋️‍♂️ Early workout", score: 80 },
+                    { text: "🤷‍♂️ What's a morning routine?", score: 10 }
+                ]
+            },
+            {
+                question: "Your ideal weekend involves...",
+                options: [
+                    { text: "🎉 Partying with friends", score: 90 },
+                    { text: "📚 Reading in a cozy corner", score: 40 },
+                    { text: "🌳 Outdoor adventures", score: 70 },
+                    { text: "🛋️ Binge-watching shows", score: 20 }
+                ]
+            },
+            {
+                question: "How do you handle stress?",
+                options: [
+                    { text: "🧘‍♀️ Meditation and deep breaths", score: 60 },
+                    { text: "🍫 Emotional eating", score: 30 },
+                    { text: "🏃‍♀️ Intense workout", score: 80 },
+                    { text: "😎 What stress?", score: 90 }
+                ]
+            },
+            {
+                question: "Your energy level is usually...",
+                options: [
+                    { text: "⚡ Always at 100%", score: 90 },
+                    { text: "🔋 High but needs recharging", score: 70 },
+                    { text: "🪫 Medium with occasional spikes", score: 50 },
+                    { text: "😴 What's energy?", score: 10 }
+                ]
+            },
+            {
+                question: "Your friends would describe you as...",
+                options: [
+                    { text: "🤪 The life of the party", score: 90 },
+                    { text: "🤓 The smart one", score: 50 },
+                    { text: "😌 The chill one", score: 40 },
+                    { text: "👻 Who?", score: 10 }
+                ]
+            }
+        ];
+
+        // Vibe Results
+        const vibeResults = [
+            {
+                minScore: 0,
+                maxScore: 150,
+                emoji: "🛌",
+                title: "Couch Potato Vibe",
+                description: "Your energy is best described as 'horizontal'. You're the master of relaxation and could win gold in napping. While others are out there hustling, you're busy perfecting the art of doing absolutely nothing."
+            },
+            {
+                minScore: 151,
+                maxScore: 250,
+                emoji: "🌊",
+                title: "Chill Vibe",
+                description: "You're the human equivalent of a lazy river - calm, cool, and going with the flow. Not too high, not too low, just perfectly balanced like a yoga instructor who's had exactly the right amount of coffee."
+            },
+            {
+                minScore: 251,
+                maxScore: 350,
+                emoji: "✨",
+                title: "Radiant Vibe",
+                description: "You shine brighter than a disco ball at a 70s party! People are drawn to your energy like moths to a flame (but hopefully with less burning). Your vibe is so strong it should probably come with a warning label."
+            },
+            {
+                minScore: 351,
+                maxScore: 500,
+                emoji: "⚡",
+                title: "Lightning Vibe",
+                description: "Warning! High energy detected! You're like a toddler on a sugar rush mixed with a rocket scientist on espresso. Your vibe is so intense it could power a small city. Maybe sit down for a minute? Just kidding - you probably can't!"
+            }
+        ];
+
+        // DOM Elements
+        const startScreen = document.getElementById('startScreen');
+        const startBtn = document.getElementById('startBtn');
+        const quizScreen = document.getElementById('quizScreen');
+        const questionContainer = document.getElementById('questionContainer');
+        const nextBtn = document.getElementById('nextBtn');
+        const progressBar = document.getElementById('progressBar');
+        const resultsScreen = document.getElementById('resultsScreen');
+        const vibeEmoji = document.getElementById('vibeEmoji');
+        const vibeTitle = document.getElementById('vibeTitle');
+        const vibeScore = document.getElementById('vibeScore');
+        const vibeDescription = document.getElementById('vibeDescription');
+        const twitterShare = document.getElementById('twitterShare');
+        const whatsappShare = document.getElementById('whatsappShare');
+        const restartBtn = document.getElementById('restartBtn');
+
+        // Quiz State
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedOption = null;
+
+        // Start Quiz
+        startBtn.addEventListener('click', startQuiz);
+
+        function startQuiz() {
+            startScreen.classList.remove('active-screen');
+            quizScreen.classList.add('active-screen');
+            showQuestion();
+        }
+
+        // Show Question
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            progressBar.style.width = `${(currentQuestion / questions.length) * 100}%`;
+            
+            let optionsHTML = '';
+            question.options.forEach((option, index) => {
+                optionsHTML += `
+                    <div class="option" data-index="${index}" data-score="${option.score}">
+                        ${option.text}
+                    </div>
+                `;
+            });
+            
+            questionContainer.innerHTML = `
+                <div class="question">
+                    <div class="question-text">${question.question}</div>
+                    <div class="options">${optionsHTML}</div>
+                </div>
+            `;
+            
+            // Add event listeners to options
+            document.querySelectorAll('.option').forEach(option => {
+                option.addEventListener('click', selectOption);
+            });
+            
+            nextBtn.disabled = true;
+        }
+
+        // Select Option
+        function selectOption(e) {
+            // Remove previous selection
+            if (selectedOption) {
+                selectedOption.classList.remove('selected');
+            }
+            
+            // Select new option
+            selectedOption = e.currentTarget;
+            selectedOption.classList.add('selected');
+            nextBtn.disabled = false;
+        }
+
+        // Next Question
+        nextBtn.addEventListener('click', goToNextQuestion);
+
+        function goToNextQuestion() {
+            if (!selectedOption) return;
+            
+            // Add to score
+            score += parseInt(selectedOption.dataset.score);
+            selectedOption = null;
+            
+            // Move to next question or show results
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        // Show Results
+        function showResults() {
+            quizScreen.classList.remove('active-screen');
+            resultsScreen.classList.add('active-screen');
+            progressBar.style.width = '100%';
+            
+            // Calculate final score (0-100 scale)
+            const maxPossibleScore = questions.reduce((sum, q) => {
+                return sum + Math.max(...q.options.map(o => o.score));
+            }, 0);
+            
+            const finalScore = Math.round((score / maxPossibleScore) * 100);
+            
+            // Find matching vibe
+            const result = vibeResults.find(vibe => 
+                score >= vibe.minScore && score <= vibe.maxScore
+            ) || vibeResults[0];
+            
+            // Display results
+            vibeEmoji.textContent = result.emoji;
+            vibeTitle.textContent = result.title;
+            vibeScore.textContent = `${finalScore}% Vibe Match`;
+            vibeDescription.textContent = result.description;
+            
+            // Set up share buttons
+            const shareText = `I just took the VibeCheck quiz and got "${result.title}" with ${finalScore}% match! Find your vibe at ${window.location.href}`;
+            twitterShare.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+            whatsappShare.href = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+            
+            // Create confetti
+            createConfetti();
+        }
+
+        // Create Confetti
+        function createConfetti() {
+            const colors = ['#FF6B9D', '#6B9DFF', '#FFD166', '#06D6A0'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = `${Math.random() * 100}vw`;
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.width = `${Math.random() * 10 + 5}px`;
+                confetti.style.height = `${Math.random() * 10 + 5}px`;
+                confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
+                confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+                document.body.appendChild(confetti);
+                
+                // Remove after animation
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+
+        // Restart Quiz
+        restartBtn.addEventListener('click', restartQuiz);
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            selectedOption = null;
+            
+            resultsScreen.classList.remove('active-screen');
+            startScreen.classList.add('active-screen');
+            
+            // Remove all confetti
+            document.querySelectorAll('.confetti').forEach(c => c.remove());
+        }
+    </script>
+</body>
+</html>
